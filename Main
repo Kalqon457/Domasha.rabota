@@ -1,0 +1,141 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+
+namespace MoeUchilishte
+{
+    public class Uchenik
+    {
+        public string Ime { get; set; }
+        public string Familia { get; set; }
+        public int Klasa { get; set; }
+    }
+    public class Predmet
+    {
+        public string Ime { get; set; }
+        public string Kode { get; set; }
+    }
+    public class Prepodavatel
+    {
+        public string Ime { get; set; }
+        public string Familia { get; set; }
+        public string Predmet { get; set; }
+    }
+    public class UchilishteData
+    {
+        public List<Uchenik> Uchenici { get; set; } = new List<Uchenik>();
+        public List<Predmet> Predmeti { get; set; } = new List<Predmet>();
+        public List<Prepodavatel> Prepodavateli { get; set; } = new List<Prepodavatel>();
+    }
+
+    class Program
+    {
+        static string filePath = "uchilishte.dat";
+        static UchilishteData data = new UchilishteData();
+
+        static void Main(string[] args)
+        {
+            int izbor;
+            do
+            {
+                Console.WriteLine("\n=== Моето училище ===");
+                Console.WriteLine("1. Добави ученик");
+                Console.WriteLine("2. Добави предмет");
+                Console.WriteLine("3. Добави преподавател");
+                Console.WriteLine("4. Покажи всички");
+                Console.WriteLine("5. Запиши във файл");
+                Console.WriteLine("6. Зареди от файл");
+                Console.WriteLine("0. Изход");
+                Console.Write("Избери опция: ");
+
+                if (!int.TryParse(Console.ReadLine(), out izbor)) izbor = -1;
+
+                switch (izbor)
+                {
+                    case 1: DobaviUchenik(); break;
+                    case 2: DobaviPredmet(); break;
+                    case 3: DobaviPrepodavatel(); break;
+                    case 4: PokajiVsichko(); break;
+                    case 5: Zapishi(); break;
+                    case 6: Zaradi(); break;
+                    case 0: Console.WriteLine("Край на програмата."); break;
+                    default: Console.WriteLine("Невалидна опция!"); break;
+                }
+            } while (izbor != 0);
+        }
+
+        static void DobaviUchenik()
+        {
+            Console.Write("Име: ");
+            string ime = Console.ReadLine();
+            Console.Write("Фамилия: ");
+            string familia = Console.ReadLine();
+            Console.Write("Клас (число): ");
+            int klasa = int.Parse(Console.ReadLine());
+            data.Uchenici.Add(new Uchenik { Ime = ime, Familia = familia, Klasa = klasa });
+        }
+
+        static void DobaviPredmet()
+        {
+            Console.Write("Име на предмет: ");
+            string ime = Console.ReadLine();
+            Console.Write("Код: ");
+            string kode = Console.ReadLine();
+            data.Predmeti.Add(new Predmet { Ime = ime, Kode = kode });
+        }
+
+        static void DobaviPrepodavatel()
+        {
+            Console.Write("Име: ");
+            string ime = Console.ReadLine();
+            Console.Write("Фамилия: ");
+            string familia = Console.ReadLine();
+            Console.Write("Преподава предмет: ");
+            string predmet = Console.ReadLine();
+            data.Prepodavateli.Add(new Prepodavatel { Ime = ime, Familia = familia, Predmet = predmet });
+        }
+
+        static void PokajiVsichko()
+        {
+            Console.WriteLine("\n--- Ученици ---");
+            foreach (var u in data.Uchenici)
+                Console.WriteLine($"{u.Ime} {u.Familia}, клас {u.Klasa}");
+
+            Console.WriteLine("\n--- Предмети ---");
+            foreach (var p in data.Predmeti)
+                Console.WriteLine($"{p.Ime} (код: {p.Kode})");
+
+            Console.WriteLine("\n--- Преподаватели ---");
+            foreach (var pr in data.Prepodavateli)
+                Console.WriteLine($"{pr.Ime} {pr.Familia}, преподава {pr.Predmet}");
+        }
+
+        static void Zapishi()
+        {
+            using (FileStream fs = new FileStream(filePath, FileMode.Create))
+            {
+                BinaryFormatter bf = new BinaryFormatter();
+                bf.Serialize(fs, data);
+            }
+            Console.WriteLine("✅ Данните са записани във файл.");
+        }
+
+        static void Zaradi()
+        {
+            if (File.Exists(filePath))
+            {
+                using (FileStream fs = new FileStream(filePath, FileMode.Open))
+                {
+                    BinaryFormatter bf = new BinaryFormatter();
+                    data = (UchilishteData)bf.Deserialize(fs);
+                }
+                Console.WriteLine("✅ Данните са заредени от файл.");
+            }
+            else
+            {
+                Console.WriteLine("⚠️ Файлът не съществува.");
+            }
+        }
+    }
+}
